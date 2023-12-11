@@ -6,7 +6,48 @@
 */
 
 function calculateTotalSpentByCategory(transactions) {
-  return [];
+  let totalSpends = {};
+
+  for (let i = 0; i < transactions.length; i++) {
+    if (totalSpends[transactions[i]["category"]] == undefined) {
+      totalSpends[transactions[i]["category"]] = transactions[i]["price"]
+    }
+    else {
+      totalSpends[transactions[i]["category"]] += transactions[i]["price"]
+    }
+  }
+
+  let totalSpendsArray = []
+  for (const category in totalSpends) {
+    totalSpendsArray.push({["category"]: category, totalSpent: totalSpends[category]});
+  }
+  return totalSpendsArray;
 }
+
+// let transaction = [
+//   {
+//     id: 1,
+//     timestamp: 1656076800000,
+//     price: 50,
+//     category: 'Food',
+//     itemName: 'Pizza',
+//   },
+//   {
+//     id: 2,
+//     timestamp: 1656076800000,
+//     price: 100,
+//     category: 'Travel',
+//     itemName: 'Bus',
+//   },
+//   {
+//     id: 3,
+//     timestamp: 1656076800000,
+//     price: 50,
+//     category: 'Food',
+//     itemName: 'Pizza',
+//   },
+// ]
+
+// console.log(calculateTotalSpentByCategory(transaction));
 
 module.exports = calculateTotalSpentByCategory;

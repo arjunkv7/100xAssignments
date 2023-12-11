@@ -16,6 +16,54 @@
   Once you've implemented the logic, test your code by running
 */
 
-class Calculator {}
+class Calculator {
+  constructor() {
+    this.result = 0;
+  }
+
+  add(number) {
+    this.result += number;
+  }
+  subtract(number) {
+    this.result -= number
+  }
+  divide(number) {
+    let operationResult = this.result / number
+    if(typeof operationResult == 'number') this.result = operationResult;
+  }
+  multiply(number) {
+    let operationResult = this.result * number
+    if(typeof operationResult == 'number') this.result = operationResult;
+  }
+  getResult() {
+    return this.result;
+  }
+  clear() {
+    this.result = 0;
+  }
+  calculate(string) {
+    let regex = /^[0-9+\-*/\s()]*$/
+
+    if (!regex.test(string)) throw new Error('Invalid string')
+
+
+      let value = eval(string.replace(/\s/g,''));
+      if (typeof value != 'number')  throw new Error('Invalid string');
+
+      return value;
+  }
+
+}
+
+let newCalculator = new Calculator;
+
+// newCalculator.add(200)
+// newCalculator.add(500)
+// newCalculator.divide(3)
+// newCalculator.multiply(6)
+// newCalculator.clear()
+// console.log(newCalculator.getResult())
+
+console.log(newCalculator.calculate(`10 +   2 *    (   6 - (4 + 1) / 2) + 7`))
 
 module.exports = Calculator;
