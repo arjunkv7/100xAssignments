@@ -39,11 +39,129 @@
 
   Testing the server - run `npm run test-todoServer` command in terminal
  */
-  const express = require('express');
-  const bodyParser = require('body-parser');
-  
-  const app = express();
-  
-  app.use(bodyParser.json());
-  
-  module.exports = app;
+const express = require('express');
+const bodyParser = require('body-parser');
+const zod = require('zod');
+const fs = require('fs');
+let allTodos = require('./todos.json');
+
+const port = 4000;
+const app = express();
+
+const todoSchema = zod.object({
+  title: zod.string(),
+  // completed: zod.boolean(),
+  description: zod.string()
+});
+
+app.use(bodyParser.json());
+
+//API
+
+app.get('/todos/:id', (req, res) => {
+  if (!req.params.id) return res.status(404).json({
+    msg: "Id is required"
+  });
+  let todo = allTodos.filter(e => e.id == req.params.id);
+  if (todo.length == 0) return res.status(404).json({ msg: "No to found" });
+
+  res.status(200).json(todo[0])
+});
+
+app.get('/todos', (req, res) => {
+  res.status(200).json(allTodos)
+});
+
+app.post('/todos', (req, res) => {
+  let body = req.body;
+  let verify = todoSchema.safeParse(body);
+
+  if (!verify.success) return res.status(400).json({
+    msg: 'Somenting woring with your payload'
+  });
+
+  let newID = Math.floor(Math.random() * 1000000) // unique random id
+  allTodos.push({
+    id: newID,
+    title: req.body.title,
+    description: req.body.description
+  });
+
+  let jsonData = JSON.stringify(allTodos);
+
+  fs.writeFile('./todos.json', jsonData, (err, data) => {
+    if (err) {
+      console.log(err)
+      throw new err
+    }
+    res.status(201).json({
+      id: newID,
+      title: req.body.title,
+      description: req.body.description
+    });
+  });
+
+});
+
+app.put('/todos/:id', (req, res) => {
+  let body = req.body;
+  let id = req.params.id;
+
+  let indexOftodo = allTodos.findIndex(obj => obj.id == id);
+  if (indexOftodo == -1) return res.status(404).json({ msg: "No todo found" });
+
+  allTodos[indexOftodo].title = body.title;
+  allTodos[indexOftodo].completed = body.completed;
+
+  let jsonData = JSON.stringify(allTodos);
+
+
+  fs.writeFile('./todos.json', jsonData, (err, data) => {
+    if (err) {
+      console.log(err)
+      throw new err
+    }
+    res.status(200).json(allTodos[indexOftodo]);
+  });
+
+});
+
+app.delete('/todos/:id', (req, res) => {
+  let id = req.params.id;
+
+  let indexOftodo = allTodos.findIndex(obj => obj.id == id);
+  if (indexOftodo == -1) return res.status(404).send();
+
+  let filteredArray = allTodos.filter(e => e.id != id);
+
+  let jsonData = JSON.stringify(filteredArray);
+
+
+  fs.writeFile('./todos.json', jsonData, (err, data) => {
+    if (err) {
+      console.log(err)
+      throw new err
+    }
+    res.status(200).send()
+  });
+
+})
+
+app.use((err, req, res, next) => {
+  console.log(err)
+  res.status(500).send('Internal server error');
+
+});
+
+app.all("*", (req, res, next) => {
+  res.status(404).send('Route not found2');
+});
+
+
+
+
+app.listen(port, () => {
+  console.log('Server is running in port, ', port);
+});
+
+module.exports = app;
